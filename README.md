@@ -102,6 +102,88 @@ print(resp.json())
 
 Replace `your-endpoint` with a real route from `analytics/urls.py`.
 
+### API Endpoints (examples)
+
+Run the server locally with:
+
+```powershell
+python manage.py runserver
+```
+
+When running locally the `{{base_url}}` value is typically `http://127.0.0.1:8000` (or your host/port). Below are common analytics endpoints present in this project and short descriptions — use these for quick API checks, Postman collections, or automated scripts.
+
+- `{{base_url}}/api/analytics/engagement-overview/`
+  - Description: High-level engagement metrics (active users, sessions, avg session duration, retention snapshots).
+  - Query params (common): `start_date`, `end_date`, `period` (e.g. `7d`, `30d`).
+
+- `{{base_url}}/api/analytics/financial-snapshot/`
+  - Description: Revenue, refunds, AR, and quick financial KPIs for the selected period.
+  - Query params: `period` (e.g. `3m`, `6m`, `12m`), `start_date`, `end_date`.
+
+- `{{base_url}}/api/analytics/charts/gender-distribution/`
+  - Description: Returns counts/percentages by gender — suitable for pie/bar charts.
+
+- `{{base_url}}/api/analytics/key-stats/`
+  - Description: Summary KPIs (total students, active courses, conversion rate, MRR/ARR snapshots).
+
+- `{{base_url}}/api/analytics/charts/monthly-revenue/?period=3m`
+  - Description: Time-series monthly revenue points. `period` controls range (examples: `3m`, `6m`, `12m`).
+
+- `{{base_url}}/api/analytics/charts/enrollment-trends/?period=3m`
+  - Description: Enrollment counts over time (useful for trend lines and forecasts).
+
+- `{{base_url}}/api/analytics/revenue-visitors/`
+  - Description: Combines revenue and visitor metrics to compute ratios like revenue-per-visitor.
+
+- `{{base_url}}/api/analytics/students-by-area/`
+  - Description: Geographic breakdown of students (country / region / area) suitable for maps or tables.
+
+- `{{base_url}}/api/analytics/charts/visitor-analytics/?period=3m`
+  - Description: Visitor metrics (new vs returning, sessions, bounce rate) returned as chart-friendly time series.
+
+Notes:
+- Replace `{{base_url}}` with your running server address (for local dev: `http://127.0.0.1:8000`).
+- The above endpoints return JSON and usually accept `Accept: application/json` header.
+- Exact field names in responses depend on the serializers defined in `analytics/serializers.py` — inspect those files to map JSON fields to UI elements or scripts.
+
+Authentication
+ - This project lists `djangorestframework_simplejwt` in `requirements.txt`. If the API requires authentication, you can obtain an access token (common default endpoints when using SimpleJWT are `/api/token/` and `/api/token/refresh/`) then include it in requests:
+
+1. Obtain token (example):
+
+```bash
+curl -sS -X POST "{{base_url}}/api/token/" -H "Content-Type: application/json" -d '{"username":"<user>","password":"<pass>"}'
+# Response contains `access` and `refresh` tokens
+```
+
+2. Use token in a request:
+
+```bash
+curl -sS -H "Accept: application/json" -H "Authorization: Bearer <ACCESS_TOKEN>" "http://127.0.0.1:8000/api/analytics/engagement-overview/"
+```
+
+Examples (quick checks)
+
+```bash
+# Replace base_url with your server address (local example shown)
+BASE=http://127.0.0.1:8000
+
+# Simple GET
+curl -sS -H "Accept: application/json" "$BASE/api/analytics/key-stats/"
+
+# With query param
+curl -sS -H "Accept: application/json" "$BASE/api/analytics/charts/monthly-revenue/?period=3m"
+
+# With JWT authorization (set ACCESS_TOKEN first)
+curl -sS -H "Accept: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" "$BASE/api/analytics/revenue-visitors/"
+```
+
+If you want, I can:
+- add a Postman/Insomnia collection JSON to the repo with these endpoints prefilled,
+- add a short example React/JS snippet that fetches `key-stats` and renders a tiny chart, or
+- inspect `analytics/serializers.py` and create a compact API reference table listing each endpoint's response fields.
+
+
 ## Demo Data
 
 Populate the database with demo/test data using the included management command:
